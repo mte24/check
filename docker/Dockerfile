@@ -17,7 +17,7 @@ RUN sudo ln -f /usr/bin/opam-2.3 /usr/bin/opam
 RUN opam init --reinit -ni
 COPY --from=tools /home/opam/.opam/*/bin/opam-0install /home/opam/opamh/_build/default/opamh.exe /usr/bin
 ARG PKG
-RUN opam-0install -t ${PKG} 'ocaml=5.3.0' | awk -v pkg=${PKG} '{ for (i = 1; i <= NF; i++) { split($i, s, "."); if (s[1] != pkg) { print $i } } }' > deps
+RUN set -o pipefail && opam-0install -t ${PKG} 'ocaml=5.3.0' | awk -v pkg=${PKG} '{ for (i = 1; i <= NF; i++) { split($i, s, "."); if (s[1] != pkg) { print $i } } }' > deps
 RUN --mount=type=cache,target=/opam-cache,uid=1000,gid=1000 \
     for dep in $(cat deps) ; do if [ -f "/opam-cache/$dep" ] && [ ! -d "/home/opam/.opam/5.3/.opam-switch/packages/$dep" ] ; then tar -xf /opam-cache/$dep -C / ; fi ; done
 RUN opamh.exe make-state --output=/home/opam/.opam/5.3/.opam-switch/switch-state
